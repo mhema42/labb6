@@ -1,5 +1,7 @@
 package labb6;
 
+import java.awt.BorderLayout;
+import java.awt.Container;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -10,6 +12,14 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.SimpleAttributeSet;
+
 /**
  * @author mhema
  * User writes notes to text file, and can read all text from file or filter out text based on headlines 
@@ -19,14 +29,37 @@ public class labb6
 	/**
 	 * IOException error message 
 	 */
-	static String error1 = "Unable to read file, begin with choice (1) and add text to file...";
-	static String error2 = "Unable to write to file, please enter correct and/or filename...";
+	private static String error1 = "Unable to read file, begin with choice (1) and add text to file...";
+	private static String error2 = "Unable to write to file, please enter correct and/or filename...";
 
-//	 * Filters text on chosen headline and returns a list with filtered text
+	private static void jFrame(String text) {
+		JFrame frame= new JFrame();  
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);  
+        Container cp = frame.getContentPane();  
+        JTextPane pane = new JTextPane();  
+        SimpleAttributeSet attributeSet = new SimpleAttributeSet();  
+        
+        Document doc = pane.getStyledDocument();  
+        try {
+			doc.insertString(doc.getLength(), text, attributeSet);
+		} catch (BadLocationException e) {
+			e.printStackTrace();
+		} 
+        
+        JScrollPane scrollPane = new JScrollPane(pane);  
+        cp.add(scrollPane, BorderLayout.CENTER);  
+        
+        frame.setLocationRelativeTo(null);
+  
+        frame.setSize(600, 400);  
+        frame.setVisible(true);
+	}
 	
-	public static Object textFilter(String path, String text) {
+	//	 * Filters text on chosen headline and returns a list with filtered text
+	
+	private static void getFilteredText(String path) {
 		
-		text = (textReader(path, text));
+		String text = (fileReader(path));
 		
 //		System.out.println(text.substring(text.indexOf('-'), text.indexOf(':') + 1));
 		
@@ -39,14 +72,33 @@ public class labb6
 			}
 			
 			List<String> listText = Arrays.asList(filter.split(";", -1));
-			listText.forEach(t -> System.out.println(t));
+			String fText = String.join("\n", listText);
 			
-			return listText;
-		} else {
-			System.out.println(error1);
-			return null;
-		}	
+//			JOptionPane.showMessageDialog(null, fText, "Filtrerad text", JOptionPane.NO_OPTION);
+			
+			jFrame(fText);	     
+		}
+			
+//			return listText;
+//		} else {
+//			System.out.println(error1);
+//			return null;
+//		}	
 	}
+	
+
+	private static void getText(String path) {
+		
+		String text = fileReader(path);
+		
+		jFrame(text);
+		
+//		UIManager.put("OptionPane.maximumSize",new Dimension(300,300)); 
+//		JOptionPane.showMessageDialog(null, text, "All text i filen", JOptionPane.NO_OPTION);
+		
+	}
+	
+	
 	
 //	/**
 //	 * returns all text from saved text file, if text file exists 
@@ -55,7 +107,10 @@ public class labb6
 //	 */
 	
 	
-	public static String textReader(String path, String text) {
+	private static String fileReader(String path) {
+		
+		String text;
+		
 		try {
 			text = new String(Files.readAllBytes(Paths.get(path)));
 		} catch (IOException e) {
@@ -70,7 +125,7 @@ public class labb6
 	 * @param path	where text file will be saved (.\text.txt)
 	 * @param text	text from input
 	 */
-	public static void fileWriter(String path, String text) {	
+	private static void fileWriter(String path, String text) {	
 		try {
 	         FileWriter fw = new FileWriter(path, true);
 	         fw.write(text + System.lineSeparator());
@@ -82,7 +137,7 @@ public class labb6
 	    }
 	}
 	
-	public static void textInput(String path, String text) {
+	private static void textInput(String path) {
 		try (Scanner input = new Scanner(System.in)) {
 						
 			System.out.println("Ange Rubrik:");
@@ -96,30 +151,27 @@ public class labb6
 			
 			input.close();
 			
-			text = "\n" + rubrik + " - " + underrubrik + ": " + newText + ";";
+			String text = "\n" + rubrik + " - " + underrubrik + ": " + newText + ";";
 			fileWriter(path, text);				
 		}
-	}
+	}	
 	
-	public static void menu() {
+	private static void menu() {
 		try (Scanner input = new Scanner(System.in)) {
 			
-			System.out.println("Välj alternativ:");
-			System.out.println("1 - Lägg till text   2 - Läs all text   3 - Filtrera på rubrik");
+			String choice = JOptionPane.showInputDialog("1 - Lägg till text" + "\n" + "2 - Läs all text" + "\n" + "3 - Filtrera på rubrik");
 			
-			String choice = input.nextLine();
 			String path = ".\\text.txt";
-			String text = null;
 			
 			switch (choice) {
 				case "1": 	
-					textInput(path, text);
+					textInput(path);
 				break;
 				case "2":
-					System.out.println(textReader(path, text)); 
+					getText(path); 
 		        break;
 				case "3":
-					textFilter(path, text);
+					getFilteredText(path);
 				break;
 			}
 		}	
