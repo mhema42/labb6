@@ -32,7 +32,7 @@ public class labb6
 	private static String error1 = "Unable to read file, begin with choice (1) and add text to file...";
 	private static String error2 = "Unable to write to file, please enter correct and/or filename...";
 
-	private static void jFrame(String text) {
+	private static void showText(String path, String text) {
 		JFrame frame= new JFrame();  
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);  
         Container cp = frame.getContentPane();  
@@ -50,65 +50,40 @@ public class labb6
         cp.add(scrollPane, BorderLayout.CENTER);  
         
         frame.setLocationRelativeTo(null);
-  
         frame.setSize(600, 400);  
         frame.setVisible(true);
 	}
-	
-	//	 * Filters text on chosen headline and returns a list with filtered text
-	
-	private static void getFilteredText(String path) {
 		
+	private static String getFilteredText(String path, String headline) {
+		String filteredText = null;
 		String text = (fileReader(path));
 		
 //		System.out.println(text.substring(text.indexOf('-'), text.indexOf(':') + 1));
 		
 		if (text != error1) {
 			String filter = "";
-			Pattern p = Pattern.compile(Pattern.quote("Java -") + "(.*?)" + Pattern.quote(";"));
+			Pattern p = Pattern.compile(Pattern.quote(headline + " -") + "(.*?)" + Pattern.quote(";"));
 			Matcher m = p.matcher(text);
 			while (m.find()) {
 				filter = filter + m.group(0);
 			}
 			
 			List<String> listText = Arrays.asList(filter.split(";", -1));
-			String fText = String.join("\n", listText);
+			filteredText = String.join("\n", listText);
 			
-//			JOptionPane.showMessageDialog(null, fText, "Filtrerad text", JOptionPane.NO_OPTION);
-			
-			jFrame(fText);	     
+//			JOptionPane.showMessageDialog(null, fText, "Filtrerad text", JOptionPane.NO_OPTION);			    
 		}
-			
-//			return listText;
-//		} else {
-//			System.out.println(error1);
-//			return null;
-//		}	
+		return filteredText; 
 	}
 	
 
-	private static void getText(String path) {
-		
+	private static String getText(String path) {
 		String text = fileReader(path);
 		
-		jFrame(text);
-		
-//		UIManager.put("OptionPane.maximumSize",new Dimension(300,300)); 
-//		JOptionPane.showMessageDialog(null, text, "All text i filen", JOptionPane.NO_OPTION);
-		
+		return text;
 	}
 	
-	
-	
-//	/**
-//	 * returns all text from saved text file, if text file exists 
-//	 * @param path	where text file is saved (.\text.txt)
-//	 * @return
-//	 */
-	
-	
 	private static String fileReader(String path) {
-		
 		String text;
 		
 		try {
@@ -120,24 +95,7 @@ public class labb6
 		return text;
 	}
 	
-	/**
-	 * after textInput, this method will save the text to file 
-	 * @param path	where text file will be saved (.\text.txt)
-	 * @param text	text from input
-	 */
-	private static void fileWriter(String path, String text) {	
-		try {
-	         FileWriter fw = new FileWriter(path, true);
-	         fw.write(text + System.lineSeparator());
-	         fw.close();
-	         System.out.println("The content is successfully appended to the file.");
-	    } 
-		catch(IOException e) {
-	         System.out.println(error2);
-	    }
-	}
-	
-	private static void textInput(String path) {
+	private static void setText(String path) {
 		try (Scanner input = new Scanner(System.in)) {
 						
 			System.out.println("Ange Rubrik:");
@@ -154,24 +112,44 @@ public class labb6
 			String text = "\n" + rubrik + " - " + underrubrik + ": " + newText + ";";
 			fileWriter(path, text);				
 		}
-	}	
+	}
+	
+	private static void fileWriter(String path, String text) {	
+		try {
+	         FileWriter fw = new FileWriter(path, true);
+	         fw.write(text + System.lineSeparator());
+	         fw.close();
+	         System.out.println("The content is successfully appended to the file.");
+	    } 
+		catch(IOException e) {
+	         System.out.println(error2);
+	    }
+	}
 	
 	private static void menu() {
 		try (Scanner input = new Scanner(System.in)) {
-			
-			String choice = JOptionPane.showInputDialog("1 - Lägg till text" + "\n" + "2 - Läs all text" + "\n" + "3 - Filtrera på rubrik");
-			
 			String path = ".\\text.txt";
+			String text = null;
 			
+			String[] choises = {
+					"1 - Lägg till text\n", 
+					"2 - Visa all text\n", 
+					"3 - Filtrera text"
+					};
+			
+			String choice = JOptionPane.showInputDialog(choises[0] + choises[1] + choises[2]);
+						
 			switch (choice) {
 				case "1": 	
-					textInput(path);
+					setText(path);
 				break;
 				case "2":
-					getText(path); 
+					text = getText(path);
+					showText(path, text); 
 		        break;
 				case "3":
-					getFilteredText(path);
+					text = getFilteredText(path, "Java");
+					showText(path, text); 
 				break;
 			}
 		}	
